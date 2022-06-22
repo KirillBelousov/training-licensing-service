@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.kirillbelousov.license.model.License;
 import ru.kirillbelousov.license.service.LicenseService;
+import ru.kirillbelousov.license.service.LinkService;
 
 @RestController
 @RequestMapping(value = "v1/organization/{organizationId}/license")
@@ -12,6 +13,8 @@ public class LicenseController {
 
     @Autowired
     private LicenseService licenseService;
+    @Autowired
+    private LinkService linkService;
 
     @PostMapping
     public ResponseEntity<String> createLicense(@PathVariable("organizationId") String organizationId,
@@ -23,6 +26,9 @@ public class LicenseController {
     public ResponseEntity<License> getLicense(@PathVariable("organizationId") String organizationId,
                                               @PathVariable("licenseId") String licenseId) {
         License license = licenseService.getLicense(licenseId, organizationId);
+        license.add(linkService.getGetLicenseLink(organizationId, license.getLicenseId()).withSelfRel(),
+                linkService.getUpdateLicenseLink(organizationId, license).withRel("updateLicense"),
+                linkService.getDeleteLicenseLink(organizationId, license.getLicenseId()).withRel("deleteLicense"));
         return ResponseEntity.ok(license);
     }
 
